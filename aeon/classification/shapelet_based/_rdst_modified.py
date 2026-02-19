@@ -6,7 +6,7 @@ shapelet dilated transform and build (by default) a ridge classifier on the outp
 
 
 __author__ = ["baraline"]
-__all__ = ["RDSTClassifier"]
+__all__ = ["RDSTClassifier_modified"]
 
 import numpy as np
 from sklearn.linear_model import RidgeClassifierCV
@@ -16,17 +16,17 @@ from sklearn.preprocessing import StandardScaler
 from aeon.base._base import _clone_estimator
 from aeon.classification.base import BaseClassifier
 from aeon.transformations.collection.shapelet_based import (
-    RandomDilatedShapeletTransform,
+    RandomDilatedShapeletTransform_modified,
 )
 
 
-class RDSTClassifier(BaseClassifier):
+class RDSTClassifier_modified(BaseClassifier):
     """
     A random dilated shapelet transform (RDST) classifier.
 
     Implementation of the random dilated shapelet transform classifier pipeline
     along the lines of [1]_[2]_. Transforms the data using the
-    `RandomDilatedShapeletTransform` and then builds a `RidgeClassifierCV` classifier
+    `RandomDilatedShapeletTransform_modified` and then builds a `RidgeClassifierCV` classifier
     with standard scalling.
 
     Parameters
@@ -152,10 +152,10 @@ class RDSTClassifier(BaseClassifier):
         self._transformer = None
         self._estimator = None
 
-        super(RDSTClassifier, self).__init__()
+        super(RDSTClassifier_modified, self).__init__()
 
     def _fit(self, X, y):
-        print("Running modified RDST!")
+        print("Running EXTRA modified RDST!")
         """Fit Classifier to training data.
 
         Parameters
@@ -175,7 +175,7 @@ class RDSTClassifier(BaseClassifier):
         Changes state by creating a fitted model that updates attributes
         ending in "_".
         """
-        self._transformer = RandomDilatedShapeletTransform(
+        self._transformer = RandomDilatedShapeletTransform_modified(
             max_shapelets=self.max_shapelets,
             shapelet_lengths=self.shapelet_lengths,
             proba_normalization=self.proba_normalization,

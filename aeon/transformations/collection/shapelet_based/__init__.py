@@ -3,6 +3,7 @@
 __all__ = [
     "RandomShapeletTransform",
     "RandomDilatedShapeletTransform",
+    "RandomDilatedShapeletTransform_modified"
 ]
 
 from aeon.transformations.collection.shapelet_based._dilated_shapelet_transform import (
@@ -10,4 +11,7 @@ from aeon.transformations.collection.shapelet_based._dilated_shapelet_transform 
 )
 from aeon.transformations.collection.shapelet_based._shapelet_transform import (
     RandomShapeletTransform,
+)
+from aeon.transformations.collection.shapelet_based._dilated_shapelet_transform_modified import (
+    RandomDilatedShapeletTransform_modified,
 )

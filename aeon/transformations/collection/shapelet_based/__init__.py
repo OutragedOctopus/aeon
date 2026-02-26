@@ -1,6 +1,6 @@
 """Shapelet based transformers."""
 
-__all__ = ["RandomShapeletTransform", "RandomDilatedShapeletTransform", "SAST", "RSAST"]
+__all__ = ["RandomShapeletTransform", "RandomDilatedShapeletTransform", "SAST", "RSAST", "RandomUndilatedShapeletTransform"]
 
 from aeon.transformations.collection.shapelet_based._dilated_shapelet_transform import (
     RandomDilatedShapeletTransform,
@@ -10,3 +10,4 @@ from aeon.transformations.collection.shapelet_based._sast import SAST
 from aeon.transformations.collection.shapelet_based._shapelet_transform import (
     RandomShapeletTransform,
 )
+from aeon.transformations.collection.shapelet_based._undilated_shapelet_transform import ( RandomUndilatedShapeletTransform)

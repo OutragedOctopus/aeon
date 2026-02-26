@@ -5,7 +5,7 @@ shapelet dilated transform and builds (by default) a ridge classifier on the out
 """
 
 __maintainer__ = ["baraline"]
-__all__ = ["RDSTClassifier"]
+__all__ = ["RSTClassifier"]
 
 
 import numpy as np
@@ -16,14 +16,14 @@ from sklearn.preprocessing import StandardScaler
 from aeon.base._base import _clone_estimator
 from aeon.classification.base import BaseClassifier
 from aeon.transformations.collection.shapelet_based import (
-    RandomDilatedShapeletTransform,
+    RandomUndilatedShapeletTransform
 )
 from aeon.utils.validation import check_n_jobs
 
 
-class RDSTClassifier(BaseClassifier):
+class RSTClassifier(BaseClassifier):
     """
-    A random dilated shapelet transform (RDST) classifier.
+    A random dilated shapelet transform (RST) classifier.
 
     Implementation of the random dilated shapelet transform classifier pipeline
     along the lines of [1]_, [2]_. Transforms the data using the
@@ -46,7 +46,7 @@ class RDSTClassifier(BaseClassifier):
         sensitivity or invariance. A value of 1 would mean that all shapelets will use
         a z-normalized distance.
     threshold_percentiles : array, default=None
-        The two percentiles used to select the threshold used to compute the Shapelet
+        The two perceniles used to select the threshold used to compute the Shapelet
         Occurrence feature. If None, the 5th and the 10th percentiles (i.e. [5,10])
         will be used.
     alpha_similarity : float, default=0.5
@@ -115,7 +115,7 @@ class RDSTClassifier(BaseClassifier):
 
     Examples
     --------
-    >>> from aeon.classification.shapelet_based import RDSTClassifier
+    >>> from aeon.classification.shapelet_based import RSTClassifier
     >>> from aeon.datasets import load_unit_test
     >>> X_train, y_train = load_unit_test(split="train")
     >>> X_test, y_test = load_unit_test(split="test")
@@ -123,7 +123,7 @@ class RDSTClassifier(BaseClassifier):
     ...     max_shapelets=10
     ... )
     >>> clf.fit(X_train, y_train)
-    RDSTClassifier(...)
+    RSTClassifier(...)
     >>> y_pred = clf.predict(X_test)
     """
 
@@ -149,6 +149,7 @@ class RDSTClassifier(BaseClassifier):
         n_jobs: int = 1,
         random_state: int | np.random.RandomState | None = None,
     ) -> None:
+
         self.max_shapelets = max_shapelets
         self.shapelet_lengths = shapelet_lengths
         self.proba_normalization = proba_normalization
@@ -188,8 +189,9 @@ class RDSTClassifier(BaseClassifier):
         Changes state by creating a fitted model that updates attributes
         ending in "_".
         """
+        print("RSTC With No Dilation running")
         self._n_jobs = check_n_jobs(self.n_jobs)
-        self._transformer = RandomDilatedShapeletTransform(
+        self._transformer = RandomUndilatedShapeletTransform(
             max_shapelets=self.max_shapelets,
             shapelet_lengths=self.shapelet_lengths,
             proba_normalization=self.proba_normalization,

@@ -205,7 +205,7 @@ class RDSTClassifier_rotation_pipeline(BaseClassifier):
 
         if self.estimator is None:
             self._estimator = RotationForestClassifier(
-            n_estimators=200,
+            n_estimators=25,
             random_state=self.random_state,
             n_jobs=self._n_jobs,
             )

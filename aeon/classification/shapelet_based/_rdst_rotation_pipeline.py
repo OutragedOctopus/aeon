@@ -5,13 +5,13 @@ shapelet dilated transform and builds (by default) a ridge classifier on the out
 """
 
 __maintainer__ = ["baraline"]
-__all__ = ["RDSTClassifier"]
+__all__ = ["RDSTClassifier_rotation_pipeline"]
 
 
 import numpy as np
-from sklearn.linear_model import RidgeClassifierCV
-from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler
+from aeon.classification.sklearn import RotationForestClassifier
+
+from sklearn.feature_selection import SelectKBest, f_classif
 
 from aeon.base._base import _clone_estimator
 from aeon.classification.base import BaseClassifier
@@ -21,7 +21,7 @@ from aeon.transformations.collection.shapelet_based import (
 from aeon.utils.validation import check_n_jobs
 
 
-class RDSTClassifier(BaseClassifier):
+class RDSTClassifier_rotation_pipeline(BaseClassifier):
     """
     A random dilated shapelet transform (RDST) classifier.
 
@@ -164,12 +164,13 @@ class RDSTClassifier(BaseClassifier):
         self.transformed_data_ = []
 
         self._transformer = None
+        self._selector = None
         self._estimator = None
 
         super().__init__()
 
     def _fit(self, X, y):
-        print("Modified!")
+        print("Modified - rotation!")
         """Fit Classifier to training data.
 
         Parameters
@@ -201,13 +202,12 @@ class RDSTClassifier(BaseClassifier):
             random_state=self.random_state,
         )
 
+
         if self.estimator is None:
-            self._estimator = make_pipeline(
-                StandardScaler(with_mean=True),
-                RidgeClassifierCV(
-                    alphas=np.logspace(-4, 4, 20),
-                    class_weight=self.class_weight,
-                ),
+            self._estimator = RotationForestClassifier(
+            n_estimators=200,
+            random_state=self.random_state,
+            n_jobs=self._n_jobs,
             )
         else:
             self._estimator = _clone_estimator(self.estimator, self.random_state)
@@ -215,11 +215,22 @@ class RDSTClassifier(BaseClassifier):
             if m is not None:
                 self._estimator.n_jobs = self._n_jobs
 
+
         X_t = self._transformer.fit_transform(X, y)
+
+        k = min(500, X_t.shape[1])
+        self._selector = SelectKBest(score_func=f_classif, k=k)
+        X_t = self._selector.fit_transform(X_t,y)
+
+        
+
         self.n_shapelets_ = self._transformer.n_shapelets_
 
         if self.save_transformed_data:
             self.transformed_data_ = X_t
+
+
+
 
         self._estimator.fit(X_t, y)
 
@@ -239,6 +250,7 @@ class RDSTClassifier(BaseClassifier):
             Predicted class labels.
         """
         X_t = self._transformer.transform(X)
+        X_t = self._selector.transform(X_t)
 
         return self._estimator.predict(X_t)
 

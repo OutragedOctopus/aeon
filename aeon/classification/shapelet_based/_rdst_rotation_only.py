@@ -5,13 +5,11 @@ shapelet dilated transform and builds (by default) a ridge classifier on the out
 """
 
 __maintainer__ = ["baraline"]
-__all__ = ["RDSTClassifier"]
+__all__ = ["RDSTClassifier_rotation_only"]
 
 
 import numpy as np
-from sklearn.linear_model import RidgeClassifierCV
-from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler
+from aeon.classification.sklearn import RotationForestClassifier
 
 from aeon.base._base import _clone_estimator
 from aeon.classification.base import BaseClassifier
@@ -21,7 +19,7 @@ from aeon.transformations.collection.shapelet_based import (
 from aeon.utils.validation import check_n_jobs
 
 
-class RDSTClassifier(BaseClassifier):
+class RDSTClassifier_rotation_only(BaseClassifier):
     """
     A random dilated shapelet transform (RDST) classifier.
 
@@ -169,7 +167,7 @@ class RDSTClassifier(BaseClassifier):
         super().__init__()
 
     def _fit(self, X, y):
-        print("Modified!")
+        print("Modified - rotation!")
         """Fit Classifier to training data.
 
         Parameters
@@ -200,14 +198,11 @@ class RDSTClassifier(BaseClassifier):
             n_jobs=self._n_jobs,
             random_state=self.random_state,
         )
-
         if self.estimator is None:
-            self._estimator = make_pipeline(
-                StandardScaler(with_mean=True),
-                RidgeClassifierCV(
-                    alphas=np.logspace(-4, 4, 20),
-                    class_weight=self.class_weight,
-                ),
+            self._estimator = RotationForestClassifier(
+            n_estimators=200,
+            random_state=self.random_state,
+            n_jobs=self._n_jobs,
             )
         else:
             self._estimator = _clone_estimator(self.estimator, self.random_state)

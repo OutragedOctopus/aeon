@@ -268,6 +268,7 @@ class RDSTClassifier_rotation_pipeline(BaseClassifier):
             Predicted probabilities using the ordering in classes_.
         """
         X_t = self._transformer.transform(X)
+        X_t = self._selector.transform(X_t)
 
         m = getattr(self._estimator, "predict_proba", None)
         if callable(m):

@@ -200,7 +200,6 @@ class RDSTClassifier_rotation_only(BaseClassifier):
         )
         if self.estimator is None:
             self._estimator = RotationForestClassifier(
-            n_estimators=25,
             random_state=self.random_state,
             n_jobs=self._n_jobs,
             )

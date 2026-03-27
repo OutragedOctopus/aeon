@@ -11,7 +11,7 @@ __all__ = ["RDSTClassifier_rotation_pipeline"]
 import numpy as np
 from aeon.classification.sklearn import RotationForestClassifier
 
-from sklearn.feature_selection import SelectKBest, f_classif
+from sklearn.feature_selection import SelectKBest, f_classif, mutual_info_classif
 
 from aeon.base._base import _clone_estimator
 from aeon.classification.base import BaseClassifier
@@ -205,7 +205,6 @@ class RDSTClassifier_rotation_pipeline(BaseClassifier):
 
         if self.estimator is None:
             self._estimator = RotationForestClassifier(
-            n_estimators=25,
             random_state=self.random_state,
             n_jobs=self._n_jobs,
             )
@@ -218,8 +217,7 @@ class RDSTClassifier_rotation_pipeline(BaseClassifier):
 
         X_t = self._transformer.fit_transform(X, y)
 
-        k = min(500, X_t.shape[1])
-        self._selector = SelectKBest(score_func=f_classif, k=k)
+        self._selector = SelectKBest(score_func=mutual_info_classif, k=min(1000, X_t.shape[1]))
         X_t = self._selector.fit_transform(X_t,y)
 
         

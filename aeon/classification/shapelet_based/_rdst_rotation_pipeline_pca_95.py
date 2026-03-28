@@ -9,6 +9,7 @@ __all__ = ["RDSTClassifier_rotation_pipeline_pca_95"]
 
 from sklearn.decomposition import PCA
 import numpy as np
+from sklearn.preprocessing import StandardScaler
 from aeon.classification.sklearn import RotationForestClassifier
 
 from sklearn.feature_selection import SelectKBest, f_classif, mutual_info_classif
@@ -164,6 +165,7 @@ class RDSTClassifier_rotation_pipeline_pca_95(BaseClassifier):
         self.transformed_data_ = []
 
         self._transformer = None
+        self._scaler = None
         self._selector = None
         self._estimator = None
 
@@ -217,8 +219,11 @@ class RDSTClassifier_rotation_pipeline_pca_95(BaseClassifier):
 
         X_t = self._transformer.fit_transform(X, y)
 
+        self._scaler = StandardScaler()
+        X_t = self._scaler.fit_transform(X_t)
+
         self._selector = PCA(n_components=0.95)
-        X_t = self._selector.fit_transform(X_t,y)
+        X_t = self._selector.fit_transform(X_t, y)
 
         
 
@@ -248,6 +253,7 @@ class RDSTClassifier_rotation_pipeline_pca_95(BaseClassifier):
             Predicted class labels.
         """
         X_t = self._transformer.transform(X)
+        X_t = self._scaler.transform(X_t)
         X_t = self._selector.transform(X_t)
 
         return self._estimator.predict(X_t)
@@ -266,6 +272,7 @@ class RDSTClassifier_rotation_pipeline_pca_95(BaseClassifier):
             Predicted probabilities using the ordering in classes_.
         """
         X_t = self._transformer.transform(X)
+        X_t = self._scaler.transform(X_t)
         X_t = self._selector.transform(X_t)
 
         m = getattr(self._estimator, "predict_proba", None)

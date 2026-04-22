@@ -15,6 +15,7 @@ from sklearn.feature_selection import SelectKBest, f_classif, mutual_info_classi
 
 from aeon.base._base import _clone_estimator
 from aeon.classification.base import BaseClassifier
+from sklearn.utils import check_random_state
 from aeon.transformations.collection.shapelet_based import (
     RandomDilatedShapeletTransform,
 )
@@ -129,6 +130,7 @@ class RDSTClassifier_rotation_pipeline_2(BaseClassifier):
 
     _tags = {
         "capability:multivariate": True,
+        "capability:train_estimate": True,
         "capability:unequal_length": True,
         "capability:multithreading": True,
         "X_inner_type": ["np-list", "numpy3D"],
@@ -169,7 +171,7 @@ class RDSTClassifier_rotation_pipeline_2(BaseClassifier):
 
         super().__init__()
 
-    def _fit(self, X, y):
+    def _fit_rdst_shared(self, X, y):
         print("Modified - rotation!")
         """Fit Classifier to training data.
 
@@ -227,12 +229,26 @@ class RDSTClassifier_rotation_pipeline_2(BaseClassifier):
         if self.save_transformed_data:
             self.transformed_data_ = X_t
 
-
-
-
+        return X_t
+    
+    def _fit(self, X, y):
+        X_t = self._fit_rdst_shared(X, y)
         self._estimator.fit(X_t, y)
-
         return self
+    def _fit_predict_proba(self, X, y) -> np.ndarray:
+        X_t = self._fit_rdst_shared(X, y)
+        proba = self._estimator.fit_predict_proba(X_t, y)
+        return proba
+    def _fit_predict(self, X, y) -> np.ndarray:
+        rng = check_random_state(self.random_state)
+        return np.array(
+            [
+                self.classes_[int(rng.choice(np.flatnonzero(prob == prob.max())))]
+                for prob in self._fit_predict_proba(X, y)
+            ]
+        )
+
+
 
     def _predict(self, X) -> np.ndarray:
         """Predicts labels for sequences in X.
@@ -249,7 +265,6 @@ class RDSTClassifier_rotation_pipeline_2(BaseClassifier):
         """
         X_t = self._transformer.transform(X)
         X_t = self._selector.transform(X_t)
-
         return self._estimator.predict(X_t)
 
     def _predict_proba(self, X) -> np.ndarray:

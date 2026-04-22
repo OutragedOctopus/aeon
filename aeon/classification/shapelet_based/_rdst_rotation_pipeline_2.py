@@ -236,6 +236,7 @@ class RDSTClassifier_rotation_pipeline_2(BaseClassifier):
         self._estimator.fit(X_t, y)
         return self
     def _fit_predict_proba(self, X, y) -> np.ndarray:
+        print("_fit_predict_proba called", flush=True)
         X_t = self._fit_rdst_shared(X, y)
         proba = self._estimator.fit_predict_proba(X_t, y)
         return proba

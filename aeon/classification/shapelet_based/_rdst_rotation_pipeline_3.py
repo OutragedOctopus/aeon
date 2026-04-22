@@ -172,7 +172,7 @@ class RDSTClassifier_rotation_pipeline_3(BaseClassifier):
         super().__init__()
 
     def _fit_rdst_shared(self, X, y):
-        print("Modified - rotation!")
+        print("Modified - rotation - with proba predict!")
         """Fit Classifier to training data.
 
         Parameters

@@ -240,7 +240,7 @@ class EarlyBatchRDSTClassifier(BaseClassifier):
             misclassified = y_pred != y
             if np.sum(misclassified) == 0:
                 break
-            print(f"Batch {batch} - Misclassified: {np.sum(misclassified)}")
+            # print(f"Batch {batch} - Misclassified: {np.sum(misclassified)}")
             sampling[misclassified] *= 2.0 #Double weight of misclassified classes
             sampling = sampling / np.sum(sampling) #norm?
             

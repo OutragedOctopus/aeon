@@ -238,7 +238,7 @@ class BatchRDSTClassifier(BaseClassifier):
             #See how many we misclassified
             y_pred = self._estimator.predict(feature_space)
             misclassified = y_pred != y
-            print(f"Batch {batch} - Misclassified: {np.sum(misclassified)}")
+            # print(f"Batch {batch} - Misclassified: {np.sum(misclassified)}")
             sampling[misclassified] *= 2.0 #Double weight of misclassified classes
             sampling = sampling / np.sum(sampling) #norm?
 

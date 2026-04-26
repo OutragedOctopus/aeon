@@ -14,9 +14,15 @@ __all__ = [
     "SASTClassifier",
     "RSASTClassifier",
     "LearningShapeletClassifier",
+    "BatchRDSTClassifier",
+    "PruneBatchRDSTClassifier",
+    "EarlyBatchRDSTClassifier",
 ]
 
 from aeon.classification.shapelet_based._ls import LearningShapeletClassifier
+from aeon.classification.shapelet_based._rdst_batch_early import EarlyBatchRDSTClassifier
+from aeon.classification.shapelet_based._rdst_batch_prune import PruneBatchRDSTClassifier
+from aeon.classification.shapelet_based._rdst_batch import BatchRDSTClassifier
 from aeon.classification.shapelet_based._rdst import RDSTClassifier
 from aeon.classification.shapelet_based._rsast import RSASTClassifier
 from aeon.classification.shapelet_based._rstc import RSTClassifier

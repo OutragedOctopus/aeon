@@ -208,11 +208,12 @@ class PruneBatchRDSTClassifier(BaseClassifier):
         sampling = np.ones(len(y)) / len(y)
         rng = check_random_state(self.random_state)
 
+
+        #Pruning init
         kept_indices = np.array([], dtype=int)
         total_cols = 0
 
         for batch in range (0, self.num_batches):
-            #RESAMPLE HAPPENS HERE - somehow
             if batch == 0:
                 X_new, y_new = X, y
             else:
@@ -229,11 +230,8 @@ class PruneBatchRDSTClassifier(BaseClassifier):
             random_state=rng.randint(0, 2**31), #Needs to be fresh per batch
             )
 
-            #Fit transformer on batch 
             transformer.fit(X_new,y_new)
-            #Add transformer to our list of transformers
             self._transformers.append(transformer)
-            #Extract shapelets from this specific transformer
             shapelets = transformer.transform(X)
             all_shapelets.append(shapelets)
             feature_space = np.hstack(all_shapelets)
@@ -246,26 +244,34 @@ class PruneBatchRDSTClassifier(BaseClassifier):
             sampling[misclassified] *= 2.0 #Double weight of misclassified classes
             sampling = sampling / np.sum(sampling) #norm?
 
-            #Iterate over batches
-            #For every batch we train a "get" a new 500 shapelets
-            #Train a fresh ridge regressor and get performance
-            #Reweight based on performance and.. ensemble?
-            new_indices = np.arange(total_cols, total_cols + shapelets.shape[1])
-            kept_indices = np.concatenate([kept_indices, new_indices])
-            total_cols += shapelets.shape[1]
-            ridge = self._estimator[-1]
-            coefs = np.abs(ridge.coef_)
-            if coefs.ndim > 1:
-                importance = coefs.max(axis=0)
-            else:
-                importance = coefs.squeeze()
 
+            #New indices for shapelets learned in this batch
+            # Array : [start, end] i.e.e for 500 shapelets at 3 features, [0, 1500], then [1500, 3000] etc
+            new_indices = np.arange(total_cols, total_cols + shapelets.shape[1])
+            #Concatenate new indices with previous
+            kept_indices = np.concatenate([kept_indices, new_indices])
+            #Update running total of columns
+            total_cols += shapelets.shape[1]
+            
+            #Extract ridge classifier from pipeline
+            ridge = self._estimator[-1]
+            #abs values of coefficients, each coefficient is a 
+            coefs = np.abs(ridge.coef_)
+            if coefs.ndim > 1: #Multiclass - coefs is 2D
+                importance = coefs.max(axis=0) #Take max importance across all classes
+            else:
+                importance = coefs.squeeze() #Single class - coef is 1D
+
+
+            #Cut out any shapelets that are less than 1% the importance of the most important shapelet
             threshold = 0.01 * importance.max()
             keep_mask = importance > threshold
-            feature_space = feature_space[:, keep_mask]
-            all_shapelets = [feature_space]
-            kept_indices = kept_indices[keep_mask]
-        final_features = np.hstack(all_shapelets)  # already pruned from last iteration
+            feature_space = feature_space[:, keep_mask] #Filter columns of feature space (shapelets)
+            all_shapelets = [feature_space] #Replace all shapelets with the pruned feature space 
+            kept_indices = kept_indices[keep_mask] #Update kept indices to cut out pruned indices
+
+        #Train final ridge classifier.
+        final_features = np.hstack(all_shapelets)  
         self._estimator.fit(final_features, y)
         self._kept_indices = kept_indices
         self.n_shapelets_ = len(kept_indices)
@@ -303,6 +309,7 @@ class PruneBatchRDSTClassifier(BaseClassifier):
             Predicted probabilities using the ordering in classes_.
         """
         X_t = np.hstack([t.transform(X) for t in self._transformers])
+        #Transform X_t, remove columns of pruned shapelets (by filtering to only columns tracked as kept)
         X_t = X_t[:, self._kept_indices]
 
         m = getattr(self._estimator, "predict_proba", None)

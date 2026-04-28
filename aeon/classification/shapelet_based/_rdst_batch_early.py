@@ -1,10 +1,15 @@
-"""Random Dilated Shapelet Transform (RDST) Classifier.
 
-A Random Dilated Shapelet Transform classifier pipeline that simply performs a random
-shapelet dilated transform and builds (by default) a ridge classifier on the output.
+"""Random Dilated Shapelet Transform with early-batch boosting (EarlyBatchRDST).
+
+Derived from aeon.classification.shapelet_based.RDSTClassifier.
+
+Modification: replaces single-pass shapelet sampling with an iterative
+boosted-style batching approach with early abandon. The `num_batches`
+parameter and the boosting logic in `_fit` are original contributions.
+
+
+Original docstring and parameter documentation retained from aeon.
 """
-
-__maintainer__ = ["baraline"]
 __all__ = ["EarlyBatchRDSTClassifier"]
 
 
@@ -23,7 +28,11 @@ from aeon.utils.validation import check_n_jobs
 
 class EarlyBatchRDSTClassifier(BaseClassifier):
     """
-    A random dilated shapelet transform (RDST) classifier.
+    A random dilated shapelet transform (RDST) classifier with iterative
+    batched sampling and misclassification-based reweighting.
+
+    Modified from aeon's RDSTClassifier — see module docstring for details.
+
 
     Implementation of the random dilated shapelet transform classifier pipeline
     along the lines of [1]_, [2]_. Transforms the data using the
@@ -208,7 +217,6 @@ class EarlyBatchRDSTClassifier(BaseClassifier):
         sampling = np.ones(len(y)) / len(y)
         rng = check_random_state(self.random_state)
         for batch in range (0, self.num_batches):
-            #RESAMPLE HAPPENS HERE - somehow
             if batch == 0:
                 X_new, y_new = X, y
             else:
@@ -240,15 +248,14 @@ class EarlyBatchRDSTClassifier(BaseClassifier):
             misclassified = y_pred != y
             if np.sum(misclassified) == 0:
                 break
-            # print(f"Batch {batch} - Misclassified: {np.sum(misclassified)}")
             sampling[misclassified] *= 2.0 #Double weight of misclassified classes
-            sampling = sampling / np.sum(sampling) #norm?
-            
+            sampling = sampling / np.sum(sampling) #norm
+
 
             #Iterate over batches
             #For every batch we train a "get" a new 500 shapelets
             #Train a fresh ridge regressor and get performance
-            #Reweight based on performance and.. ensemble?
+            #Reweight based on performance 
         self.n_shapelets_ = sum(t.n_shapelets_ for t in self._transformers)
         return self
 

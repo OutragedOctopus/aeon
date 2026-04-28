@@ -1,10 +1,21 @@
-"""Random Dilated Shapelet Transform (RDST) Classifier.
+"""Random Dilated Shapelet Transform with Rotation Forest classifier 
+(RDST-RF-1K) with attribute selection
 
-A Random Dilated Shapelet Transform classifier pipeline that simply performs a random
-shapelet dilated transform and builds (by default) a ridge classifier on the output.
+Derived from aeon.classification.shapelet_based.RDSTClassifier.
+
+Modification: replaces the default `RidgeClassifierCV` (with standard
+scaling) downstream of the shapelet transform with aeon's
+`RotationForestClassifier`. The shapelet sampling and transform are
+unchanged from upstream aeon, but a `SelectKBest` feature selection 
+step using mutual information is added after 
+the shapelet transform and before the classifier, 
+to select the top 1000 features
+
+
+ Original docstring and parameter documentation retained from aeon.
 """
 
-__maintainer__ = ["baraline"]
+
 __all__ = ["RDSTClassifier_rotation_pipeline"]
 
 
@@ -23,7 +34,10 @@ from aeon.utils.validation import check_n_jobs
 
 class RDSTClassifier_rotation_pipeline(BaseClassifier):
     """
-    A random dilated shapelet transform (RDST) classifier.
+    A random dilated shapelet transform (RDST) classifier with a Rotation Forest classifier downstream, and SelectKBest feature selection.
+
+    Modified from aeon's RDSTClassifier — see module docstring for details.
+
 
     Implementation of the random dilated shapelet transform classifier pipeline
     along the lines of [1]_, [2]_. Transforms the data using the

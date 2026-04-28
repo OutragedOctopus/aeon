@@ -1,11 +1,12 @@
-"""Random Dilated Shapelet Transform (RDST) Classifier.
+"""Random Undilated Shapelet Transform Classifier (RUST)
 
-A Random Dilated Shapelet Transform classifier pipeline that simply performs a random
-shapelet dilated transform and builds (by default) a ridge classifier on the output.
+Derived from aeon.classification.shapelet_based.RDSTClassifier.
+
+Modification: replaces the RandomDilatedShapeletTransform with a 
+RandomUndilatedShapeletTransform, variation setting all dilation parameters to 1 to force contiguous subsequences
+ Original docstring and parameter documentation retained from aeon.
 """
-
-__maintainer__ = ["baraline"]
-__all__ = ["RSTClassifier"]
+__all__ = ["RUSTClassifier"]
 
 
 import numpy as np
@@ -21,13 +22,16 @@ from aeon.transformations.collection.shapelet_based import (
 from aeon.utils.validation import check_n_jobs
 
 
-class RSTClassifier(BaseClassifier):
+class RUSTClassifier(BaseClassifier):
     """
-    A random dilated shapelet transform (RST) classifier.
+    A random undilated shapelet transform (RUST) classifier.
 
-    Implementation of the random dilated shapelet transform classifier pipeline
+    Modified from aeon's RDSTClassifier — see module docstring for details.
+
+
+    Implementation of the random undilated shapelet transform classifier pipeline
     along the lines of [1]_, [2]_. Transforms the data using the
-    `RandomDilatedShapeletTransform` and then builds a `RidgeClassifierCV` classifier
+    `RandomUndilatedShapeletTransform` and then builds a `RidgeClassifierCV` classifier
     with standard scaling.
 
     Parameters

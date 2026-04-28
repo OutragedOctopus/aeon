@@ -1,10 +1,17 @@
-"""Random Dilated Shapelet Transform (RDST) Classifier.
+"""Random Dilated Shapelet Transform with batched sampling and ridge-coefficient pruning (PruneBatchRDST).
 
-A Random Dilated Shapelet Transform classifier pipeline that simply performs a random
-shapelet dilated transform and builds (by default) a ridge classifier on the output.
+Derived from aeon.classification.shapelet_based.RDSTClassifier.
+
+Modification: replaces single-pass uniform shapelet sampling with an iterative
+batched approach with misclassification-based reweighting, plus per-batch
+pruning of low-importance shapelets based on their ridge classifier
+coefficients (shapelets with importance below 1% of the maximum are
+discarded after each batch). The `num_batches` parameter, the boosting
+logic, and the pruning logic in `_fit` are original contributions.
+
+Original docstring and parameter documentation retained from aeon.
 """
 
-__maintainer__ = ["baraline"]
 __all__ = ["PruneBatchRDSTClassifier"]
 
 
@@ -23,7 +30,11 @@ from aeon.utils.validation import check_n_jobs
 
 class PruneBatchRDSTClassifier(BaseClassifier):
     """
-    A random dilated shapelet transform (RDST) classifier.
+    A random dilated shapelet transform (RDST) classifier with iterative
+    batched sampling and misclassification-based reweighting.
+
+    Modified from aeon's RDSTClassifier — see module docstring for details.
+
 
     Implementation of the random dilated shapelet transform classifier pipeline
     along the lines of [1]_, [2]_. Transforms the data using the
@@ -240,9 +251,8 @@ class PruneBatchRDSTClassifier(BaseClassifier):
             #See how many we misclassified
             y_pred = self._estimator.predict(feature_space)
             misclassified = y_pred != y
-            # print(f"Batch {batch} - Misclassified: {np.sum(misclassified)}")
             sampling[misclassified] *= 2.0 #Double weight of misclassified classes
-            sampling = sampling / np.sum(sampling) #norm?
+            sampling = sampling / np.sum(sampling) #norm
 
 
             #New indices for shapelets learned in this batch
